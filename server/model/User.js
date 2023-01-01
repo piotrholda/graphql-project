@@ -3,8 +3,9 @@ const MSchema = mongoose.Schema;
 
 const userSchema = new MSchema({
         name: String,
-        age: number,
+        age: Number,
         profession: String
-})
+});
 
-module.exports = mongoose.model('User', userSchema)
+var User = mongoose.model('User', userSchema);
+module.exports = { User };

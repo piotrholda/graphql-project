@@ -1,3 +1,7 @@
+const { User } = require('../model/User');
+const { Post } = require('../model/Post');
+const { Hobby } = require('../model/Hobby');
+
 const graphql = require('graphql');
 var _ = require('lodash');
 
@@ -7,7 +11,8 @@ const {
     GraphQLString,
     GraphQLInt,
     GraphQLSchema,
-    GraphQLList
+    GraphQLList,
+    GraphQLNonNull
 } = graphql
 
 const usersData = [
@@ -154,52 +159,156 @@ const Mutation = new GraphQLObjectType({
         createUser: {
             type: UserType,
             args: {
-                //id: {type: GraphQLID}
-                name: {type: GraphQLString},
-                age: {type: GraphQLInt},
+                name: {type: new GraphQLNonNull(GraphQLString)},
+                age: {type: new GraphQLNonNull(GraphQLInt)},
                 profession: {type: GraphQLString}
             },
             resolve(parent, args) {
-                let user = {
+                let user = new User({
                     name: args.name,
                     age: args.age,
                     profession: args.profession
+                });
+                return user.save();
+            }
+        },
+
+        updateUser: {
+            type: UserType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)},
+                name: {type: new GraphQLNonNull(GraphQLString)},
+                age: {type: new GraphQLNonNull(GraphQLInt)},
+                profession: {type: GraphQLString}
+            },
+            resolve(parent, args) {
+                return updatedUser = User.findByIdAndUpdate(
+                    args.id,
+                    {
+                        $set: {
+                            name: args.name,
+                            age: args.age,
+                            profession: args.profession
+                        }
+                    },
+                    {new: true}
+                );
+            }
+        },
+
+        removeUser: {
+            type: UserType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)}
+            },
+            resolve(parent, args) {
+                let removedUser = User.findByIdAndRemove(args.id).exec();
+                if (!removedUser) {
+                    throw new("Error: Unable to remove user.");
                 }
-                return user;
+                return removedUser;
             }
         },
 
         createPost: {
                     type: PostType,
                     args: {
-                        comment: {type: GraphQLString},
-                        userId: {type: GraphQLID}
+                        comment: {type: new GraphQLNonNull(GraphQLString)},
+                        userId: {type: new GraphQLNonNull(GraphQLID)}
                     },
                     resolve(parent, args) {
-                        let post = {
-                            comment: args.comment,
-                            userId: args.userId
-                        }
-                        return post;
+                        let post = new Post({
+                                        comment: args.comment,
+                                        userId: args.userId
+                                    });
+                        return post.save();
                     }
                 },
+
+        updatePost: {
+            type: PostType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)},
+                comment: {type: new GraphQLNonNull(GraphQLString)}
+            },
+            resolve(parent, args) {
+                return updatedPost = Post.findByIdAndUpdate(
+                    args.id,
+                    {
+                        $set: {
+                            comment: args.comment
+                        }
+                    },
+                    {new: true}
+                );
+            }
+        },
+
+        removePost: {
+            type: PostType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)}
+            },
+            resolve(parent, args) {
+                let removedPost = Post.findByIdAndRemove(args.id).exec();
+                if (!removedPost) {
+                    throw new("Error: Unable to remove post.");
+                }
+                return removedPost;
+            }
+        },
 
         createHobby: {
                     type: HobbyType,
                     args: {
-                        title: {type: GraphQLString},
-                        description: {type: GraphQLString},
+                        title: {type: new GraphQLNonNull(GraphQLString)},
+                        description: {type: new GraphQLNonNull(GraphQLString)},
                         userId: {type: GraphQLID}
                     },
                     resolve(parent, args) {
-                        let hobby = {
+                        let hobby = new Hobby({
                             title: args.title,
                             description: args.description,
                             userId: args.userId
-                        }
-                        return hobby;
+                        });
+                        return hobby.save();
                     }
+                },
+
+        updateHobby: {
+            type: HobbyType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)},
+                        title: {type: new GraphQLNonNull(GraphQLString)},
+                        description: {type: new GraphQLNonNull(GraphQLString)}
+            },
+            resolve(parent, args) {
+                return updatedHobby = Hobby.findByIdAndUpdate(
+                    args.id,
+                    {
+                        $set: {
+                            title: args.title,
+                            description: args.description
+                        }
+                    },
+                    {new: true}
+                );
+            }
+        },
+
+        removeHobby: {
+            type: HobbyType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLString)}
+            },
+            resolve(parent, args) {
+                let removedHobby = Hobby.findByIdAndRemove(args.id).exec();
+                if (!removedHobby) {
+                    throw new("Error: Unable to remove hobby.");
                 }
+                return removedHobby;
+            }
+        }
 
     }
 });
